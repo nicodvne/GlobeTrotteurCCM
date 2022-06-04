@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">GlobeTrotteur</string>
+    <string name="button_choose_picture">Choose Picture</string>
 </resources>
