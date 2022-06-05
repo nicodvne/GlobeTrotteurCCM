@@ -2,17 +2,30 @@ package com.example.globetrotteur;
 
 
 
-import androidx.appcompat.app.AppCompatActivity;
+import static com.google.android.material.internal.ContextUtils.getActivity;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -41,7 +54,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
-
+        //notifyTest();
+        scheduleJob();
         // Initialize the location fields
         if (location != null) {
             System.out.println("Provider " + provider + " has been selected.");
@@ -50,6 +64,56 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             lon = ("Location not available");
             lat = ("Location not available");
         }
+    }
+
+    private void scheduleJob(){
+
+        scheduleJobTakePictureReminder();
+
+    }
+
+    private void scheduleJobTakePictureReminder(){
+
+        Log.i("TAG", "SCHEDULING !");
+        JobScheduler jobScheduler = (JobScheduler)getApplicationContext()
+                .getSystemService(JOB_SCHEDULER_SERVICE);
+
+        ComponentName componentName = new ComponentName(this,
+                TakePictureReminderService.class);
+
+        JobInfo jobInfo = new JobInfo.Builder(5844, componentName)
+                .setPeriodic(5000)
+                .setPersisted(true).build();
+
+        jobScheduler.schedule(jobInfo);
+    }
+
+    public void notifyTest(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "le channel";
+            String description = "le channel";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel("42", name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+
+        Intent intent = new Intent(this, TakePictureFromNotificationActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "42")
+                .setSmallIcon(R.drawable.ic_photo_black_48dp)
+                .setContentTitle("Viens prendre un photo !")
+                .setContentText("N'oublie pas de prendre une photo tous les jours ;) ")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(58, builder.build());
     }
 
     public void onClickChoosePicture(View view) {
