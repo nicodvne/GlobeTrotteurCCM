@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">GlobeTrotteur</string>
     <string name="button_choose_picture">Choose Picture</string>
+    <string name="image_posted_success">The image has been successfully send !</string>
 </resources>

@@ -8,18 +8,18 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
-
+import android.Manifest;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
-import com.github.dhaval2404.imagepicker.listener.DismissListener;
-
 import java.io.File;
+
 
 public class TakePictureFromNotificationActivity extends AppCompatActivity implements LocationListener {
 
@@ -29,24 +29,19 @@ public class TakePictureFromNotificationActivity extends AppCompatActivity imple
     private String lat = "";
     private Button button_choose_picture;
     private String provider;
+    final static String[] PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET};
+    final static int PERMISSION_ALL = 1;
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
-        @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(provider);
-        //scheduleJob();
-        // Initialize the location fields
-        if (location != null) {
-            System.out.println("Provider " + provider + " has been selected.");
-            onLocationChanged(location);
-        } else {
-            lon = ("Location not available");
-            lat = ("Location not available");
+        if (Build.VERSION.SDK_INT >= 23) {
+            requestPermissions(PERMISSIONS, PERMISSION_ALL);
         }
-        Log.i("TAG","EE");
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
         ImagePicker.with(this)
                 .compress(1024)            //Final image size will be less than 1 MB(Optional).
                 .maxResultSize(1080, 1080)
@@ -55,19 +50,22 @@ public class TakePictureFromNotificationActivity extends AppCompatActivity imple
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode  == RESULT_OK) {
-            //Toast.makeText(MainActivity.this, data.getData().toString(), Toast.LENGTH_SHORT).show();
-            File image = new File(((Uri)data.getData()).getPath());
-            String newFile = renameFile(image, lon +","+ lat + ".png");
-            Toast.makeText(TakePictureFromNotificationActivity.this,lon + " : " + lat + " " + newFile, Toast.LENGTH_SHORT).show();
-            finish();
-        } else if (resultCode == ImagePicker.RESULT_ERROR) {
-            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
+        try {
+            super.onActivityResult(requestCode, resultCode, data);
+            if (resultCode  == RESULT_OK) {
+                File image = new File(((Uri)data.getData()).getPath());
+                String path = image.getPath();
+                if(lon != "" && lat != ""){
+                    path = renameFile(image, lon +","+ lat + ".png");
+                }
+                Toast.makeText(TakePictureFromNotificationActivity.this, path, Toast.LENGTH_SHORT).show();
+                Toast.makeText(TakePictureFromNotificationActivity.this, R.string.image_posted_success, Toast.LENGTH_SHORT).show();
+
+            }
+        } catch (Exception ex) {
+            Toast.makeText(TakePictureFromNotificationActivity.this, ex.toString(),
+                    Toast.LENGTH_SHORT).show();
         }
-        finish();
 
     }
 
@@ -84,34 +82,18 @@ public class TakePictureFromNotificationActivity extends AppCompatActivity imple
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        locationManager.requestLocationUpdates(provider, 400, 1, this);
-    }
-
-    /* Remove the locationlistener updates when Activity is paused */
-    @Override
-    protected void onPause() {
-        super.onPause();
-        locationManager.removeUpdates(this);
-    }
-
-    @Override
     public void onLocationChanged(Location location) {
-        lat = String.valueOf((Double) (location.getLatitude()));
-        lon = String.valueOf((Double) (location.getLongitude()));
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        Toast.makeText(this, "Enabled new provider " + provider,
-                Toast.LENGTH_SHORT).show();
-
+        lon = String.valueOf(location.getLongitude());
+        lat = String.valueOf(location.getLatitude());
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        Toast.makeText(this, "Disabled provider " + provider,
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(TakePictureFromNotificationActivity.this, "Please Enable GPS and Internet", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
     }
 }

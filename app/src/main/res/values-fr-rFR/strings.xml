@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">GlobeTrotteur</string>
     <string name="button_choose_picture">Choisissez une image</string>
+    <string name="image_posted_success">L\'image a été envoyée avec succés !</string>
 </resources>
