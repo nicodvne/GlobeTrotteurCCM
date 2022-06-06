@@ -4,19 +4,11 @@ package com.example.globetrotteur;
 
 import static com.google.android.material.internal.ContextUtils.getActivity;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 
 import android.annotation.SuppressLint;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -24,8 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import android.Manifest;
@@ -51,42 +41,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         if (Build.VERSION.SDK_INT >= 23) {
             requestPermissions(PERMISSIONS, PERMISSION_ALL);
         }
-        scheduleJob();
-
         setContentView(R.layout.activity_main);
-
         checkIfLocationHasChanged();
     }
 
-
-    private void scheduleJob(){
-        @SuppressLint("RestrictedApi") SharedPreferences sharedPref = getActivity(this).getPreferences(Context.MODE_PRIVATE);
-
-        SharedPreferences.Editor editor = sharedPref.edit();
-        if(!sharedPref.getBoolean("firstRunComplete", false)){
-            //schedule the job only once.
-            scheduleJobTakePictureReminder();
-            //update shared preference
-            editor.putBoolean("firstRunComplete", true);
-            editor.commit();
-        }
-
-    }
-
-    private void scheduleJobTakePictureReminder(){
-
-        JobScheduler jobScheduler = (JobScheduler)getApplicationContext()
-                .getSystemService(JOB_SCHEDULER_SERVICE);
-
-        ComponentName componentName = new ComponentName(this,
-                TakePictureReminderService.class);
-
-        JobInfo jobInfo = new JobInfo.Builder(4242, componentName)
-                .setPeriodic(15 * 60 * 1000)
-                .setPersisted(true).build();
-
-        jobScheduler.schedule(jobInfo);
-    }
 
     @SuppressLint("MissingPermission")
     public void onClickChoosePicture(View view) {
@@ -112,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 if(lon != "" && lat != ""){
                     path = renameFile(image, lon +","+ lat + ".png");
                 }
+                /////
                 Toast.makeText(MainActivity.this, path, Toast.LENGTH_SHORT).show();
                 Toast.makeText(MainActivity.this, R.string.image_posted_success, Toast.LENGTH_SHORT).show();
             }
@@ -119,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             Toast.makeText(MainActivity.this, ex.toString(),
                     Toast.LENGTH_SHORT).show();
         }
-
     }
 
     @SuppressLint("MissingPermission")

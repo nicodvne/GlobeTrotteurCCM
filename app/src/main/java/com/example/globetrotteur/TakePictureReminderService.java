@@ -3,8 +3,12 @@ package com.example.globetrotteur;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.job.JobInfo;
 import android.app.job.JobParameters;
+import android.app.job.JobScheduler;
 import android.app.job.JobService;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
@@ -30,7 +34,7 @@ public class TakePictureReminderService extends JobService {
             notificationManager.createNotificationChannel(channel);
         }
 
-        Intent intent = new Intent(this, TakePictureFromNotificationActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -43,13 +47,24 @@ public class TakePictureReminderService extends JobService {
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
 
-        // notificationId is a unique int for each notification that you must define
         notificationManager.notify(NOTIFICATION_ID, builder.build());
         return true;
     }
+
     @Override
     public boolean onStopJob(JobParameters jobParameters) {
         jobFinished(jobParameters, false);
         return false;
+    }
+
+    public static void scheduleJob(Context context) {
+        ComponentName serviceComponent = new ComponentName(context, TakePictureReminderService.class);
+        JobInfo jobInbo = new JobInfo.Builder(4875, serviceComponent)
+                .setMinimumLatency(5000)
+                .setOverrideDeadline(6000)
+                .build();
+
+        JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
+        jobScheduler.schedule(jobInbo);
     }
 }
