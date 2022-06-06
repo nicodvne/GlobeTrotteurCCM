@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private String lon = "";
     private String lat = "";
     public static final int PHOTO_ACTIVITY_RETURN_CODE = 42;
-    final static String[] PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET};
+    final static String[] PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET, Manifest.permission.CAMERA};
     final static int PERMISSION_ALL = 1;
 
     @SuppressLint("MissingPermission")
