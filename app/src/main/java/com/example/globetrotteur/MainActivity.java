@@ -12,10 +12,12 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.view.View;
 import android.widget.Toast;
 import android.Manifest;
@@ -23,11 +25,18 @@ import com.github.dhaval2404.imagepicker.ImagePicker;
 
 import java.io.File;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
     LocationManager locationManager;
-    private final String url = "http://10.0.2.2:8080/TestAndroid/UploadServlet";
+    private final String url = "https://ccmglobetrotteur.ew.r.appspot.com/download-image";
     private String lon = "";
     private String lat = "";
     public static final int PHOTO_ACTIVITY_RETURN_CODE = 42;
@@ -38,6 +47,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy gfgPolicy =
+                    new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(gfgPolicy);
+        }
+
         if (Build.VERSION.SDK_INT >= 23) {
             requestPermissions(PERMISSIONS, PERMISSION_ALL);
         }
@@ -70,7 +85,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 if(lon != "" && lat != ""){
                     path = renameFile(image, lon +","+ lat + ".png");
                 }
-                /////
+
+                this.sendFile(new File(path));
+
                 Toast.makeText(MainActivity.this, path, Toast.LENGTH_SHORT).show();
                 Toast.makeText(MainActivity.this, R.string.image_posted_success, Toast.LENGTH_SHORT).show();
             }
@@ -112,6 +129,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     public void onProviderEnabled(String provider) {
+
+    }
+
+    public void sendFile(File file) {
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart("androidImage",file.getName(),
+                        RequestBody.create(MediaType.parse("application/octet-stream"),
+                                file))
+                .build();
+        Request request = new Request.Builder()
+                .url(url)
+                .method("POST", body)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
