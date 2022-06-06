@@ -35,8 +35,8 @@ public class TakePictureReminderService extends JobService {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_photo_black_48dp)
-                .setContentTitle("Take a picture !")
-                .setContentText("Don't forget to take your daily picture ")
+                .setContentTitle(getString(R.string.reminder_title))
+                .setContentText(getString(R.string.reminder_desc))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);

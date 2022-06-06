@@ -55,8 +55,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
         setContentView(R.layout.activity_main);
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
+        checkIfLocationHasChanged();
     }
 
 
@@ -64,11 +63,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         @SuppressLint("RestrictedApi") SharedPreferences sharedPref = getActivity(this).getPreferences(Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = sharedPref.edit();
-
         if(!sharedPref.getBoolean("firstRunComplete", false)){
             //schedule the job only once.
             scheduleJobTakePictureReminder();
-
             //update shared preference
             editor.putBoolean("firstRunComplete", true);
             editor.commit();
@@ -84,8 +81,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         ComponentName componentName = new ComponentName(this,
                 TakePictureReminderService.class);
 
-        JobInfo jobInfo = new JobInfo.Builder(5844, componentName)
-                .setPeriodic(5000)
+        JobInfo jobInfo = new JobInfo.Builder(4242, componentName)
+                .setPeriodic(15 * 60 * 1000)
                 .setPersisted(true).build();
 
         jobScheduler.schedule(jobInfo);
@@ -103,11 +100,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         try {
             super.onActivityResult(requestCode, resultCode, data);
             if (requestCode == PHOTO_ACTIVITY_RETURN_CODE  && resultCode  == RESULT_OK) {
+                checkIfLocationHasChanged();
                 File image = new File(((Uri)data.getData()).getPath());
                 String path = image.getPath();
                 if(lon != "" && lat != ""){
@@ -121,6 +120,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    @SuppressLint("MissingPermission")
+    private void checkIfLocationHasChanged() {
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
 
     private String renameFile(File file, String name) {

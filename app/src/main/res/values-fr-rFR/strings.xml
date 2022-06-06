@@ -3,4 +3,6 @@
     <string name="app_name">GlobeTrotteur</string>
     <string name="button_choose_picture">Choisissez une image</string>
     <string name="image_posted_success">L\'image a été envoyée avec succés !</string>
+    <string name="reminder_title">Take a picture !</string>
+    <string name="reminder_desc">Don\'t forget to take one picture per day</string>
 </resources>

@@ -39,20 +39,22 @@ public class TakePictureFromNotificationActivity extends AppCompatActivity imple
         if (Build.VERSION.SDK_INT >= 23) {
             requestPermissions(PERMISSIONS, PERMISSION_ALL);
         }
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         ImagePicker.with(this)
                 .compress(1024)            //Final image size will be less than 1 MB(Optional).
                 .maxResultSize(1080, 1080)
                 .start();
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         try {
             super.onActivityResult(requestCode, resultCode, data);
             if (resultCode  == RESULT_OK) {
+                locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
                 File image = new File(((Uri)data.getData()).getPath());
                 String path = image.getPath();
                 if(lon != "" && lat != ""){
@@ -66,7 +68,7 @@ public class TakePictureFromNotificationActivity extends AppCompatActivity imple
             Toast.makeText(TakePictureFromNotificationActivity.this, ex.toString(),
                     Toast.LENGTH_SHORT).show();
         }
-
+        finish();
     }
 
     private String renameFile(File file, String name) {
