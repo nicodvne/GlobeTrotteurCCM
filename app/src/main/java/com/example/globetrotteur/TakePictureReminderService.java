@@ -16,6 +16,8 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import java.util.concurrent.TimeUnit;
+
 public class TakePictureReminderService extends JobService {
 
     private final String CHANNEL_ID = "job_service_notification_channel";
@@ -38,7 +40,7 @@ public class TakePictureReminderService extends JobService {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_photo_black_48dp)
+                .setSmallIcon(R.drawable.ic_photo_camera_black_48dp)
                 .setContentTitle(getString(R.string.reminder_title))
                 .setContentText(getString(R.string.reminder_desc))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -60,11 +62,11 @@ public class TakePictureReminderService extends JobService {
     public static void scheduleJob(Context context) {
         ComponentName serviceComponent = new ComponentName(context, TakePictureReminderService.class);
         JobInfo jobInbo = new JobInfo.Builder(4875, serviceComponent)
-                .setMinimumLatency(5000)
-                .setOverrideDeadline(6000)
+                .setPeriodic(TimeUnit.MINUTES.toMillis(15))
                 .build();
 
         JobScheduler jobScheduler = context.getSystemService(JobScheduler.class);
         jobScheduler.schedule(jobInbo);
+        Log.i("TAG", "Job is running");
     }
 }
